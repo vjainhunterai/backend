@@ -43,7 +43,7 @@ async def rank_resumes(resumes: list[UploadFile] = File(...)):
             candidate_data = {
                 "Filename": resume.filename,
                 "Category": analysis.get("Category", "Unknown"),
-                "Experience_Years": analysis.get("Experience_Years", 0),
+                "Experience_Years": analysis.get("Experience_Years", .5),
                 "Key_Skills": analysis.get("Key_Skills", []),
                 "Education": analysis.get("Education", "Not mentioned"),
                 "Certifications": analysis.get("Certifications", []),
