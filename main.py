@@ -46,7 +46,7 @@ async def analyze_candidate(resume: UploadFile = File(...)):
         response = requests.post(
             HF_API_URL,
             headers={"Authorization": f"Bearer {HF_API_KEY}"},
-            json={"inputs": f"Analyze this resume: {resume_text}"}
+            json={"inputs": f"Analyze this resume and help us to identify key areas where resource has worked : {resume_text}"}
         )
 
         return response.json()
