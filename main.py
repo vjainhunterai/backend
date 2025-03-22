@@ -5,7 +5,7 @@ import fitz  # PyMuPDF for PDF text extraction
 app = FastAPI()
 
 HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-HF_API_KEY = "your_huggingface_api_key_here"
+HF_API_KEY = "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"  # Store API Key as Environment Variable
 
 def extract_text_from_pdf(pdf_bytes):
     """Extract text from a PDF file using PyMuPDF."""
