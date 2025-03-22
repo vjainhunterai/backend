@@ -7,7 +7,8 @@ import os
 app = FastAPI()
 
 # Hugging Face API
-HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/llama-3-8b"
+#HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/llama-3-8b"
+HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
 HF_API_KEY = "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"  # Store API Key as Environment Variable
 
 @app.post("/analyze_candidate/")
