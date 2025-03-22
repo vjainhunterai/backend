@@ -8,7 +8,7 @@ app = FastAPI()
 
 # Hugging Face API
 HF_API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1"
-HF_API_KEY = os.getenv("HF_API_KEY")  # Use environment variable for security
+HF_API_KEY = "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"  # Store API Key as Environment Variable
 
 def query_huggingface(prompt, resume_text):
     """Helper function to query Hugging Face API with different prompts"""
