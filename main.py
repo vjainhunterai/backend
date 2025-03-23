@@ -5,8 +5,8 @@ import fitz  # PyMuPDF
 
 app = FastAPI()
 
-HF_API_URL = "YOUR_HUGGING_FACE_API_URL"
-HF_API_KEY = "YOUR_HUGGING_FACE_API_KEY"
+HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
+HF_API_KEY = "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"  # Store API Key as Environment Variable
 
 @app.post("/rank_resumes/")
 async def rank_resumes(files: List[UploadFile] = File(...)):
