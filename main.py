@@ -1,65 +1,53 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, File, UploadFile
+from typing import List
 import requests
-import fitz  # PyMuPDF for PDF text extraction
+import fitz  # PyMuPDF
 
 app = FastAPI()
 
-HF_API_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
-HF_API_KEY = "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"  # Store API Key as Environment Variable
-
-def extract_text_from_pdf(pdf_bytes):
-    """Extract text from a PDF file using PyMuPDF."""
-    pdf_reader = fitz.open(stream=pdf_bytes, filetype="pdf")
-    return "\n".join([page.get_text("text") for page in pdf_reader])
+HF_API_URL = "YOUR_HUGGING_FACE_API_URL"
+HF_API_KEY = "YOUR_HUGGING_FACE_API_KEY"
 
 @app.post("/rank_resumes/")
-async def rank_resumes(resumes: list[UploadFile] = File(...)):
-    """Rank multiple resumes based on experience, skills, and certifications."""
+async def rank_resumes(files: List[UploadFile] = File(...)):
+    ranked_resumes = []  # Store processed resumes
 
-    if not resumes:
-        raise HTTPException(status_code=400, detail="No resumes uploaded.")
-
-    ranked_candidates = []
-
-    for resume in resumes:
+    for file in files:
         try:
-            # Read and extract text from PDF
-            pdf_bytes = await resume.read()
-            resume_text = extract_text_from_pdf(pdf_bytes)
+            # Read PDF file
+            pdf_bytes = await file.read()
+            pdf_reader = fitz.open(stream=pdf_bytes, filetype="pdf")
+            resume_text = "\n".join([page.get_text("text") for page in pdf_reader])
 
-            if not resume_text.strip():
-                continue  # Skip if no text extracted
+            # Debug: Print extracted resume text
+            print(f"DEBUG: Extracted text from {file.filename} - {resume_text[:300]}...")
 
-            # Call Hugging Face API for structured analysis
+            # Call Hugging Face API
             response = requests.post(
                 HF_API_URL,
                 headers={"Authorization": f"Bearer {HF_API_KEY}"},
-                json={"inputs": f"Analyze and categorize this resume:\n{resume_text}"}
+                json={"inputs": f"Extract key areas from resume: {resume_text}"}
             )
 
-            analysis = response.json()
+            # Ensure response is a dictionary
+            api_result = response.json()
+            if isinstance(api_result, list):
+                print(f"ERROR: API returned a list instead of a dictionary: {api_result}")
+                continue  # Skip this resume
 
-            # Example data extraction (modify based on actual API response)
-            candidate_data = {
-                "Filename": resume.filename,
-                "Category": analysis.get("Category", "Unknown"),
-                "Experience_Years": analysis.get("Experience_Years", .5),
-                "Key_Skills": analysis.get("Key_Skills", []),
-                "Education": analysis.get("Education", "Not mentioned"),
-                "Certifications": analysis.get("Certifications", []),
-                "Rank_Score": (
-                    (analysis.get("Experience_Years", 0) * 0.5) +
-                    (len(analysis.get("Key_Skills", [])) * 0.3) +
-                    (len(analysis.get("Certifications", [])) * 0.2)
-                )
-            }
-
-            ranked_candidates.append(candidate_data)
+            # Construct ranked resume data
+            ranked_resumes.append({
+                "Filename": file.filename,
+                "Category": api_result.get("Category", "Unknown"),
+                "Experience_Years": api_result.get("Experience_Years", 0),
+                "Key_Skills": api_result.get("Key_Skills", []),
+                "Education": api_result.get("Education", "Unknown"),
+                "Certifications": api_result.get("Certifications", []),
+                "Rank_Score": api_result.get("Rank_Score", 0)
+            })
 
         except Exception as e:
-            print(f"Error processing {resume.filename}: {e}")
+            print(f"Error processing {file.filename}: {str(e)}")
 
-    # Rank candidates based on the calculated Rank_Score
-    ranked_candidates = sorted(ranked_candidates, key=lambda x: x["Rank_Score"], reverse=True)
-
-    return {"ranked_resumes": ranked_candidates}
+    print("DEBUG: Final ranked resumes ->", ranked_resumes)  # Print ranked resumes before returning
+    return {"ranked_resumes": ranked_resumes}
